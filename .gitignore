@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+
+# Logs and temp files
+logs
+*.log
+npm-debug.log*
+*.bak
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Android build outputs & local config
+android/.gradle/
+android/build/
+android/local.properties
+android/.idea/
+android/app/build/
+
+# iOS build outputs
+ios/App/Pods/
+ios/App/Podfile.lock
+ios/App/build/

@@ -1,0 +1,6 @@
+{
+  "appId": "com.apexengineer.dashboard",
+  "appName": "ApexEngineer",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}

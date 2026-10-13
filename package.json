@@ -1,0 +1,19 @@
+{
+  "name": "apex-engineer-dashboard",
+  "version": "1.0.0",
+  "description": "ApexEngineer PS5 Telemetry Dashboard for Android and iOS",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'No build step required'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0",
+    "capacitor-udp-socket": "^6.0.0",
+    "js-salsa20": "^1.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  }
+}

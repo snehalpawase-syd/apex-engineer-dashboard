@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ApexEngineer // PS5 Sim Racing Dashboard</title>
+    <!-- Chart.js for Real-Time Telemetry Traces -->
+    <script src="chart.js"></script>
+    <!-- Custom Sleek Styles -->
+    <link rel="stylesheet" href="style.css?v=1782641771">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Background Ambient Glows -->
+        <div class="ambient-glow glow-blue"></div>
+        <div class="ambient-glow glow-purple"></div>
+
+        <!-- Top Header & Session Bar -->
+        <header class="glass-panel main-header">
+            <div class="logo-section">
+                <span class="logo-accent">APEX</span>ENGINEER
+                <span class="status-badge disconnected" id="connection-status">OFF</span>
+            </div>
+            
+            <div class="session-details">
+                <div class="session-item">
+                    <span class="label">GAME</span>
+                    <span class="value" id="session-game">-</span>
+                </div>
+                <div class="session-item">
+                    <span class="label">TRACK</span>
+                    <span class="value" id="session-track">DETECTING...</span>
+                </div>
+                <div class="session-item">
+                    <span class="label">WEATHER</span>
+                    <span class="value" id="session-weather">DRY</span>
+                </div>
+                <div class="session-item">
+                    <span class="label">FLAG</span>
+                    <span class="value flag-none" id="session-flag">GREEN</span>
+                </div>
+            </div>
+
+            </header>
+        <!-- Mobile Tab Navigation Bar -->
+        <div class="tab-bar glass-panel">
+            <button class="tab-btn active" data-tab="hud">📺 HUD</button>
+            <button class="tab-btn" data-tab="status">🏎️ STATUS</button>
+            <button class="tab-btn" data-tab="charts">📈 CHARTS</button>
+            <button class="tab-btn" data-tab="engineer">🛠️ SETTINGS</button>
+        </div>
+
+
+        <!-- F1-Style Dynamic Shift Light Indicator -->
+        <div class="shift-indicator-bar" id="shift-bar">
+            <div class="led led-green"></div><div class="led led-green"></div><div class="led led-green"></div><div class="led led-green"></div>
+            <div class="led led-red"></div><div class="led led-red"></div><div class="led led-red"></div><div class="led led-red"></div>
+            <div class="led led-blue"></div><div class="led led-blue"></div><div class="led led-blue"></div><div class="led led-blue"></div>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <main class="dashboard-grid active-tab-hud">
+            <!-- Config panel shown in settings tab -->
+            <section class="config-panel glass-panel" id="config-panel">
+                <div class="panel-header">
+                    <h2>RADIO SYSTEM CONFIGURATION</h2>
+                    <span class="sub-label">TELEMETRY LINK SETUP</span>
+                </div>
+                <div class="config-controls-grid">
+                    <!-- Game Selection Segmented Toggle -->
+                    <div class="config-group">
+                        <label class="config-label">SELECT GAME</label>
+                        <div class="game-toggle-container">
+                            <button type="button" class="game-toggle-btn active" data-game="gt7">GT7</button>
+                            <button type="button" class="game-toggle-btn" data-game="f1">F1 25</button>
+                        </div>
+                        <!-- Hidden select to maintain compatibility with existing code -->
+                        <select id="game-select" style="display: none;">
+                            <option value="gt7">Gran Turismo 7</option>
+                            <option value="f1">F1 25 / Legacy</option>
+                        </select>
+                    </div>
+
+                    <!-- Session Type -->
+                    <div class="config-group">
+                        <label for="series-input" class="config-label">SESSION NAME</label>
+                        <input type="text" id="series-input" class="glass-input" placeholder="e.g. Practice, Race" value="Practice">
+                    </div>
+
+                    <!-- PS5 IP Address -->
+                    <div class="config-group">
+                        <label for="ps5-ip" class="config-label">PS5 IP ADDRESS</label>
+                        <input type="text" id="ps5-ip" class="glass-input" placeholder="e.g. 192.168.1.50 or mock" value="192.168.1.">
+                    </div>
+
+                    <!-- Connection Actions -->
+                    <div class="config-actions">
+                        <button id="connect-btn" class="glass-btn primary-btn">START RADIO</button>
+                        <button id="demo-btn" class="glass-btn secondary-btn">DEMO MODE</button>
+                    </div>
+                </div>
+            </section>
+
+            
+            <!-- Column 1: Cockpit Telemetry (Inputs, Speed, RPM, Gear) -->
+            <section class="grid-col main-cockpit glass-panel">
+                <div class="cockpit-header">
+                    <h2>COCKPIT TELEMETRY</h2>
+                    <span class="sub-label">LIVE DRIVER INPUTS</span>
+                </div>
+
+                <!-- RPM Linear Indicator -->
+                <div class="rpm-container">
+                    <div class="rpm-text-row">
+                        <span class="rpm-label">ENGINE RPM</span>
+                        <span class="rpm-value" id="rpm-value">0</span>
+                    </div>
+                    <div class="rpm-bar-outer">
+                        <div class="rpm-bar-inner" id="rpm-bar-fill"></div>
+                    </div>
+                </div>
+
+                <!-- Large Speedometer, Gear, Inputs Panel -->
+                <div class="cockpit-core">
+                    <!-- Left: Driver Inputs (Throttle & Brake) -->
+                    <div class="pedal-inputs">
+                        <div class="pedal-bar throttle-group">
+                            <span class="pedal-lbl">THR</span>
+                            <div class="bar-outer">
+                                <div class="bar-inner throttle-fill" id="throttle-fill"></div>
+                            </div>
+                            <span class="pedal-val" id="throttle-val">0%</span>
+                        </div>
+                        <div class="pedal-bar brake-group">
+                            <span class="pedal-lbl">BRK</span>
+                            <div class="bar-outer">
+                                <div class="bar-inner brake-fill" id="brake-fill"></div>
+                            </div>
+                            <span class="pedal-val" id="brake-val">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Center: Glowing Speedometer & Gear Indicator -->
+                    <div class="speed-gear-gauge">
+                        <div class="gear-outer">
+                            <span class="gear-value" id="gear-val">N</span>
+                            <span class="gear-label">GEAR</span>
+                        </div>
+                        <div class="speed-container">
+                            <span class="speed-value" id="speed-val">0</span>
+                            <span class="speed-unit">KM/H</span>
+                        </div>
+                    </div>
+
+                    <!-- Right: Steering Angle Indicator -->
+                    <div class="steering-panel">
+                        <span class="steer-lbl">STEERING</span>
+                        <div class="steer-wheel-container">
+                            <svg class="steer-svg" viewBox="0 0 100 100" id="steer-svg">
+                                <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.07)" stroke-width="6" fill="none" />
+                                <circle cx="50" cy="50" r="40" stroke="#00b0ff" stroke-width="6" fill="none" stroke-dasharray="251.2" stroke-dashoffset="180" id="steer-arc" />
+                                <line x1="50" y1="10" x2="50" y2="30" stroke="#ff1744" stroke-width="4" id="steer-marker" />
+                            </svg>
+                        </div>
+                        <span class="steer-val" id="steer-val">0°</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 2: Tyre Temperatures, Wear & Brakes -->
+            <section class="grid-col tyre-monitor glass-panel">
+                <div class="panel-header">
+                    <h2>CAR STATUS & TYRES</h2>
+                    <span class="sub-label">HEAT & PRESSURES</span>
+                </div>
+
+                <!-- 2x2 Tyre Grid -->
+                <div class="tyre-grid">
+                    <!-- Front Left -->
+                    <div class="tyre-card fl" id="tyre-fl">
+                        <span class="tyre-pos">FL</span>
+                        <div class="tyre-temp-row">
+                            <div class="temp-item">
+                                <span class="tyre-lbl">SURF</span>
+                                <span class="tyre-val" id="tyre-fl-surf">0°C</span>
+                            </div>
+                            <div class="temp-item">
+                                <span class="tyre-lbl">CORE</span>
+                                <span class="tyre-val" id="tyre-fl-core">0°C</span>
+                            </div>
+                        </div>
+                        <div class="tyre-psi" id="tyre-fl-psi">0.0 PSI</div>
+                        <div class="tyre-wear" id="tyre-fl-wear">WEAR 0%</div>
+                    </div>
+                    <!-- Front Right -->
+                    <div class="tyre-card fr" id="tyre-fr">
+                        <span class="tyre-pos">FR</span>
+                        <div class="tyre-temp-row">
+                            <div class="temp-item">
+                                <span class="tyre-lbl">SURF</span>
+                                <span class="tyre-val" id="tyre-fr-surf">0°C</span>
+                            </div>
+                            <div class="temp-item">
+                                <span class="tyre-lbl">CORE</span>
+                                <span class="tyre-val" id="tyre-fr-core">0°C</span>
+                            </div>
+                        </div>
+                        <div class="tyre-psi" id="tyre-fr-psi">0.0 PSI</div>
+                        <div class="tyre-wear" id="tyre-fr-wear">WEAR 0%</div>
+                    </div>
+                    <!-- Rear Left -->
+                    <div class="tyre-card rl" id="tyre-rl">
+                        <span class="tyre-pos">RL</span>
+                        <div class="tyre-temp-row">
+                            <div class="temp-item">
+                                <span class="tyre-lbl">SURF</span>
+                                <span class="tyre-val" id="tyre-rl-surf">0°C</span>
+                            </div>
+                            <div class="temp-item">
+                                <span class="tyre-lbl">CORE</span>
+                                <span class="tyre-val" id="tyre-rl-core">0°C</span>
+                            </div>
+                        </div>
+                        <div class="tyre-psi" id="tyre-rl-psi">0.0 PSI</div>
+                        <div class="tyre-wear" id="tyre-rl-wear">WEAR 0%</div>
+                    </div>
+                    <!-- Rear Right -->
+                    <div class="tyre-card rr" id="tyre-rr">
+                        <span class="tyre-pos">RR</span>
+                        <div class="tyre-temp-row">
+                            <div class="temp-item">
+                                <span class="tyre-lbl">SURF</span>
+                                <span class="tyre-val" id="tyre-rr-surf">0°C</span>
+                            </div>
+                            <div class="temp-item">
+                                <span class="tyre-lbl">CORE</span>
+                                <span class="tyre-val" id="tyre-rr-core">0°C</span>
+                            </div>
+                        </div>
+                        <div class="tyre-psi" id="tyre-rr-psi">0.0 PSI</div>
+                        <div class="tyre-wear" id="tyre-rr-wear">WEAR 0%</div>
+                    </div>
+                </div>
+
+                <!-- Auxiliary Metrics: Fuel and ERS -->
+                <div class="aux-metrics-panel">
+                    <div class="aux-metric fuel-group">
+                        <div class="metric-info">
+                            <span class="metric-lbl">FUEL REMAINING</span>
+                            <span class="metric-val" id="fuel-val">0.0 L</span>
+                        </div>
+                        <div class="metric-bar-outer">
+                            <div class="metric-bar-inner fuel-fill" id="fuel-bar-fill"></div>
+                        </div>
+                        <div class="metric-sub" id="fuel-laps-est">EST. LAPS: --</div>
+                    </div>
+
+                    <div class="aux-metric tyre-wear-group">
+                        <div class="metric-info">
+                            <span class="metric-lbl">TYRE WEAR AVG</span>
+                            <span class="metric-val" id="tyre-wear-avg">0%</span>
+                        </div>
+                        <div class="metric-bar-outer">
+                            <div class="metric-bar-inner tyre-wear-fill" id="tyre-wear-bar-fill"></div>
+                        </div>
+                        <div class="metric-sub" id="tyre-wear-status">WEAR: STABLE</div>
+                    </div>
+
+                    <div class="aux-metric ers-group" id="ers-panel" style="display:none;">
+                        <div class="metric-info">
+                            <span class="metric-lbl">ERS STORE</span>
+                            <span class="metric-val" id="ers-val">0%</span>
+                        </div>
+                        <div class="metric-bar-outer">
+                            <div class="metric-bar-inner ers-fill" id="ers-bar-fill"></div>
+                        </div>
+                        <div class="metric-sub" id="drs-status">DRS: NOT AVAILABLE</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 3: Timing & Delta (Sector times, current/best lap) -->
+            <section class="grid-col timing-panel glass-panel">
+                <div class="panel-header">
+                    <h2>LAP TIMES & DELTA</h2>
+                    <span class="sub-label">SESSION SECTORS</span>
+                </div>
+
+                <!-- Delta Screen -->
+                <div class="delta-display delta-neutral" id="delta-screen">
+                    <span class="delta-label">GAP TO BEST</span>
+                    <span class="delta-value" id="delta-val">+0.000</span>
+                </div>
+
+                <!-- Timing Core -->
+                <div class="timing-list">
+                    <div class="timing-row">
+                        <span class="lbl">CURRENT LAP</span>
+                        <span class="val cur-lap" id="lap-current">0</span>
+                    </div>
+                    <div class="timing-row">
+                        <span class="lbl">CURRENT TIME</span>
+                        <span class="val cur-time" id="lap-time-cur">0:00.000</span>
+                    </div>
+                    <div class="timing-row">
+                        <span class="lbl">LAST LAP</span>
+                        <span class="val" id="lap-time-last">0:00.000</span>
+                    </div>
+                    <div class="timing-row">
+                        <span class="lbl">PERSONAL BEST</span>
+                        <span class="val best-lap" id="lap-time-best">0:00.000</span>
+                    </div>
+                </div>
+
+                <!-- Sector Splits -->
+                <div class="sectors-container">
+                    <h3>SECTOR SPLITS</h3>
+                    <div class="sector-bars" id="sector-bars"></div>
+                </div>
+            </section>
+            
+            <!-- Bottom Row Left: Virtual AI Race Engineer Speech Terminal -->
+            <section class="grid-col-wide engineer-terminal glass-panel">
+                <div class="terminal-header">
+                    <div class="header-main">
+                        <h2>VIRTUAL RACE ENGINEER</h2>
+                        <span class="pulse-dot"></span>
+                    </div>
+                    <div class="terminal-controls">
+                        <button id="voice-test-btn" class="glass-btn secondary-btn small-btn">TEST COMMS</button>
+                        <button id="voice-mute-btn" class="glass-btn secondary-btn small-btn">MUTE RADIO</button>
+                    </div>
+                </div>
+
+                <!-- Speech Logs scrolling console -->
+                <div class="terminal-console" id="terminal-console">
+                    <div class="console-line system-msg">[SYSTEM]: RADIO CONNECTED. STANDBY FOR TELEMETRY ENCRYPT HANDSHAKE...</div>
+                </div>
+            </section>
+
+            <!-- Bottom Row Right: Real-time Telemetry Graph -->
+            <section class="grid-col-wide telemetry-chart-panel glass-panel">
+                <div class="panel-header chart-header">
+                    <h2>TELEMETRY HISTORY</h2>
+                    <span class="sub-label">15 SEC TRACES (SPEED, RPM, DRIVER INPUTS)</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="telemetryChart"></canvas>
+                </div>
+            </section>
+
+            <section class="race-data-panel glass-panel">
+                <div class="panel-header history-header">
+                    <div>
+                        <h2>RACE DATA ARCHIVE</h2>
+                        <span class="sub-label">STORED SESSIONS, LAPS & TELEMETRY MARKERS</span>
+                    </div>
+                    <div class="history-actions">
+                        <button id="history-export-btn" class="glass-btn secondary-btn small-btn">EXPORT JSON</button>
+                        <button id="history-clear-btn" class="glass-btn secondary-btn small-btn">CLEAR</button>
+                    </div>
+                </div>
+
+                <div class="history-filters">
+                    <select id="history-game-filter" class="glass-select">
+                        <option value="all">All Games</option>
+                        <option value="gt7">Gran Turismo 7</option>
+                        <option value="f1">F1 25 / Legacy</option>
+                    </select>
+                    <input type="text" id="history-series-filter" class="glass-input" placeholder="Series contains">
+                    <input type="number" id="history-lap-min" class="glass-input lap-filter" placeholder="Min lap" min="0">
+                    <input type="number" id="history-lap-max" class="glass-input lap-filter" placeholder="Max lap" min="0">
+                    <button id="history-filter-reset" class="glass-btn secondary-btn small-btn">RESET FILTERS</button>
+                </div>
+
+                <div class="history-summary" id="history-summary">0 stored records</div>
+
+                <div class="history-table-wrap">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Game</th>
+                                <th>Series</th>
+                                <th>Track</th>
+                                <th>Lap</th>
+                                <th>Type</th>
+                                <th>Lap Time</th>
+                                <th>Best</th>
+                                <th>Tyres</th>
+                                <th>Fuel</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-results">
+                            <tr><td colspan="10" class="history-empty">No race data stored yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+        
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>APEXENGINEER Telemetry Link // Developed for PS5 Sim Racing</p>
+        </footer>
+    </div>
+
+    <!-- Core Javascript Code -->
+    <script src="salsa20.js"></script>
+    <script src="capacitor.js"></script>
+    <script src="app.js?v=1782641771"></script>
+</body>
+</html>
